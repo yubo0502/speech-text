@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+<body>
+
+
+
+<audio id="player" controls></audio>
+<script>
+  const player = document.getElementById('player');
+
+  const handleSuccess = function (stream) {
+    if (window.URL) {
+      player.srcObject = stream;
+    } else {
+      player.src = stream;
+    }
+  };
+
+  navigator.mediaDevices
+    .getUserMedia({audio: true, video: false})
+    .then(handleSuccess);
+</script>
+
+
+<h1>溶接チャートロボット</h1>
+<div>
+    <div id="chatbox">
+        <p class="botText"><span>コンシェルジュ０号 ：ご要望は何ですか？</span></p>
+    </div>
+    <div id="userInput">
+        <input id="textInput" type="text" name="msg" placeholder="Message">
+        <input id="buttonInput" type="submit" value="Send">
+    </div>
+    <script>
+        function getBotResponse() {
+            var rawText = $("#textInput").val();
+            var userHtml = '<p class="userText"><span>' + rawText + '</span></p>';
+            $("#textInput").val("");
+            $("#chatbox").append(userHtml);
+            document.getElementById('userInput').scrollIntoView({block: 'start', behavior: 'smooth'});
+            $.get("/get", {msg: rawText}).done(function (data) {
+                var botHtml = '<p class="botText"><span>' + data + '</span></p>';
+                $("#chatbox").append(botHtml);
+                document.getElementById('userInput').scrollIntoView({block: 'start', behavior: 'smooth'});
+            });
+        }
+
+        function get_voice_response() {
+
+        }
+
+        $("#textInput").keypress(function (e) {
+            if ((e.which == 13) && document.getElementById("textInput").value != "") {
+                getBotResponse();
+            }
+        });
+        $("#buttonInput").click(function () {
+            <!--
+            if (document.getElementById("textInput").value != "") {
+                getBotResponse();
+            }
+            -->
+            //get_voice_response();
+            record();
+        })
+    </script>
+</div>
+</body>
+</html>
+<script>
+
+    function record() {
+        window.navigator.mediaDevices.getUserMedia({
+            audio: true
+        }).then(mediaStream => {
+            console.log(mediaStream);
+            beginRecord(mediaStream);
+        }).catch(err => {
+            // 如果用户电脑没有麦克风设备或者用户拒绝了，或者连接出问题了等
+            // 这里都会抛异常，并且通过err.name可以知道是哪种类型的错误
+            console.error(err);
+        });
+    }
+
+</script>
