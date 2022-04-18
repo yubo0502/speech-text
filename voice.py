@@ -3,13 +3,12 @@
 
 # <code>
 import azure.cognitiveservices.speech as speechsdk
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 from chatterbot.response_selection import get_random_response
 
 app = Flask(__name__)
-
 
 my_bot = ChatBot(name='コンシェルジュ０号', read_only=True,
                  response_selection_method=get_random_response,
@@ -36,6 +35,7 @@ corpus_trainer.train("./data/my_corpus/conversations.yml")
 
 '''
 
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -49,16 +49,19 @@ def get_bot_response():
 
 @app.route("/voice")
 def get_voice_response():
+    voice_input = request.files('voice_msg')
+    print(voice_input)
     # Creates an instance of a speech config with specified subscription key and service region.
     # Replace with your own subscription key and service region (e.g., "westus").
     speech_key, service_region = "cf7ce1c0351b479a884e23e1a64665a9", "japanwest"
     speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
     speech_config.speech_recognition_language = "ja-JP"
 
+    speechsdk.AudioConfig(use_default_microphone=False, filename=voice_input)
+    # speechsdk.AudioConfig()
+
     # Creates a recognizer with the given settings
     speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
-
-    print("Say something...")
 
     # Starts speech recognition, and returns after a single utterance is recognized. The end of a
     # single utterance is determined by listening for silence at the end or until a maximum of 15
@@ -81,11 +84,45 @@ def get_voice_response():
 
     # </code>
 
-    #return my_bot.name + "：" + str(my_bot.get_response(user_input))
+    # return my_bot.name + "：" + str(my_bot.get_response(user_input))
+
+
+@app.route("/receive", methods=['post'])
+def form():
+    files = request.files
+    file = files.get('file')
+    print(file.filename)
+
+    response = jsonify("File received and saved!")
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    speech_key, service_region = "cf7ce1c0351b479a884e23e1a64665a9", "japanwest"
+    speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
+    speech_config.speech_recognition_language = "ja-JP"
+
+    speechsdk.AudioConfig(use_default_microphone=False, filename=file.filename)
+
+    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
+
+    result = speech_recognizer.recognize_once()
+
+    # Checks result.
+    if result.reason == speechsdk.ResultReason.RecognizedSpeech:
+        print("Recognized: {}".format(result.text))
+    elif result.reason == speechsdk.ResultReason.NoMatch:
+        print("No speech could be recognized: {}".format(result.no_match_details))
+    elif result.reason == speechsdk.ResultReason.Canceled:
+        cancellation_details = result.cancellation_details
+        print("Speech Recognition canceled: {}".format(cancellation_details.reason))
+        if cancellation_details.reason == speechsdk.CancellationReason.Error:
+            print("Error details: {}".format(cancellation_details.error_details))
+
+    return response
 
 
 if __name__ == "__main__":
     # httpserver = WSGIServer(('0.0.0.0', 5000), app)
     # httpserver.serve_forever()
-    app.run(host='192.168.43.141', port=80)
-    #app.run(host='127.0.0.1', port=8080)
+    app.run(host='192.168.43.141', port=5000, ssl_context='adhoc', debug=True)
+# app.run(ssl_context='adhoc')
+# app.run(debug=True)

@@ -1,29 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="stylesheet" type="text/css" href="../static/css/style.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
 </head>
 <body>
 
-
-
-<audio id="player" controls></audio>
-<script>
-  const player = document.getElementById('player');
-
-  const handleSuccess = function (stream) {
-    if (window.URL) {
-      player.srcObject = stream;
-    } else {
-      player.src = stream;
-    }
-  };
-
-  navigator.mediaDevices
-    .getUserMedia({audio: true, video: false})
-    .then(handleSuccess);
-</script>
 
 
 <h1>溶接チャートロボット</h1>
@@ -35,6 +18,24 @@
         <input id="textInput" type="text" name="msg" placeholder="Message">
         <input id="buttonInput" type="submit" value="Send">
     </div>
+    <div id="container">
+
+    <div id="player">
+
+        <h1>Audio Recording using RecordRTC</h1>
+        <p>Tested in Chrome, Firefox and Safari 11 (Mac and IOS)</p>
+
+        <br>
+        <button id="btn-start-recording">Start Recording</button>
+        <button id="btn-stop-recording" disabled>Stop Recording</button>
+
+        <hr>
+        <audio controls autoplay></audio>
+    </div>
+</div>
+
+
+
     <script>
         function getBotResponse() {
             var rawText = $("#textInput").val();
@@ -50,7 +51,12 @@
         }
 
         function get_voice_response() {
+            var url=document.querySelector("audio").src
 
+            let formData = new FormData();
+            formData.append(audio, url, 'audio.wav');
+
+            $.get("/voice", {voice_msg: audio});
         }
 
         $("#textInput").keypress(function (e) {
@@ -64,26 +70,11 @@
                 getBotResponse();
             }
             -->
-            //get_voice_response();
-            record();
+            get_voice_response();
         })
     </script>
+
 </div>
+<script src="../static/js/AudioRecorder.js"></script>
 </body>
 </html>
-<script>
-
-    function record() {
-        window.navigator.mediaDevices.getUserMedia({
-            audio: true
-        }).then(mediaStream => {
-            console.log(mediaStream);
-            beginRecord(mediaStream);
-        }).catch(err => {
-            // 如果用户电脑没有麦克风设备或者用户拒绝了，或者连接出问题了等
-            // 这里都会抛异常，并且通过err.name可以知道是哪种类型的错误
-            console.error(err);
-        });
-    }
-
-</script>
