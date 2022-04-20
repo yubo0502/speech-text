@@ -2,8 +2,8 @@
 # Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
 
 # <code>
-import azure.cognitiveservices.speech as speechsdk
-from flask import Flask, render_template, request, jsonify
+import azure.cognitiveservices.speech as speech_sdk
+from flask import Flask, render_template, request, jsonify, Response, json
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 from chatterbot.response_selection import get_random_response
@@ -26,38 +26,24 @@ my_bot = ChatBot(name='コンシェルジュ０号', read_only=True,
                          'import_path': 'chatterbot.logic.MathematicalEvaluation'
                      }]
                  )
-'''
+''' 学習処理
 corpus_trainer = ChatterBotCorpusTrainer(my_bot)
 corpus_trainer.train("./data/my_corpus/conversations.yml")
-
-# print(my_bot.name, "：ご要望は何ですか？")
-
-
 '''
 
-
-@app.route("/")
-def home():
-    return render_template("index.html")
-
-
-@app.route("/get")
-def get_bot_response():
-    user_input = request.args.get('msg')
-    return my_bot.name + "：" + str(my_bot.get_response(user_input))
+# Azure Portal で取得したキーと地域を指定 --- (*1)
+API_KEY = "cf7ce1c0351b479a884e23e1a64665a9"
+API_REGION = "japanwest"
 
 
-@app.route("/voice")
-def get_voice_response():
-    voice_input = request.files('voice_msg')
-    print(voice_input)
+def get_voice_response(audio_file):
+    """
     # Creates an instance of a speech config with specified subscription key and service region.
     # Replace with your own subscription key and service region (e.g., "westus").
     speech_key, service_region = "cf7ce1c0351b479a884e23e1a64665a9", "japanwest"
     speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
     speech_config.speech_recognition_language = "ja-JP"
-
-    speechsdk.AudioConfig(use_default_microphone=False, filename=voice_input)
+    speechsdk.AudioConfig(use_default_microphone=False, filename="./data/my_voice/VoiceMemo.wav")
     # speechsdk.AudioConfig()
 
     # Creates a recognizer with the given settings
@@ -73,56 +59,76 @@ def get_voice_response():
 
     # Checks result.
     if result.reason == speechsdk.ResultReason.RecognizedSpeech:
+        voice_str = result.text
         print("Recognized: {}".format(result.text))
     elif result.reason == speechsdk.ResultReason.NoMatch:
-        print("No speech could be recognized: {}".format(result.no_match_details))
+        voice_str = "No speech could be recognized: {}".format(result.no_match_details)
+        print(voice_str)
     elif result.reason == speechsdk.ResultReason.Canceled:
         cancellation_details = result.cancellation_details
-        print("Speech Recognition canceled: {}".format(cancellation_details.reason))
+        voice_str = "Speech Recognition canceled: {}".format(cancellation_details.reason)
+        print(voice_str)
         if cancellation_details.reason == speechsdk.CancellationReason.Error:
-            print("Error details: {}".format(cancellation_details.error_details))
+            voice_str = "Error details: {}".format(cancellation_details.error_details)
+            print(voice_str)
+    """
+    # APIの設定 --- (*2)
+    speech_config = speech_sdk.SpeechConfig(
+        subscription=API_KEY,
+        region=API_REGION)
+    # 言語を日本語に指定
+    speech_config.speech_recognition_language = "ja-JP"
+    # WAVファイルを指定
 
-    # </code>
+    audio_config = speech_sdk.AudioConfig(filename="./data/my_voice/voice.wav")
+    # SpeechRecognizerを生成 --- (*3)
+    speech_recognizer = speech_sdk.SpeechRecognizer(
+        speech_config=speech_config,
+        audio_config=audio_config)
+    # 音声認識を実行 --- (*6)
+    result = speech_recognizer.recognize_once()
+    voice_str = result.text
 
-    # return my_bot.name + "：" + str(my_bot.get_response(user_input))
+    return voice_str
 
 
-@app.route("/receive", methods=['post'])
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+
+@app.route("/get")
+def get_bot_response():
+    user_input = request.args.get('msg')
+    return my_bot.name + "：" + str(my_bot.get_response(user_input))
+
+
+@app.route("/receive", methods=['POST'])
 def form():
     files = request.files
     file = files.get('file')
-    print(file.filename)
+    # file.save("file.wav")
+    file.save("./data/my_voice/voice.wav")
 
     response = jsonify("File received and saved!")
-    response.headers.add('Access-Control-Allow-Origin', '*')
+    # response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers['Access-Control-Allow-Origin'] = '*'
 
-    speech_key, service_region = "cf7ce1c0351b479a884e23e1a64665a9", "japanwest"
-    speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
-    speech_config.speech_recognition_language = "ja-JP"
+    print("File received and saved!")
+    # get_voice_response(file.filename)
 
-    speechsdk.AudioConfig(use_default_microphone=False, filename=file.filename)
+    voice_text = get_voice_response(file.filename)
+    print(voice_text)
+    # text_recog = my_bot.get_response(result1)
 
-    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
+    # print(text_recog)
 
-    result = speech_recognizer.recognize_once()
-
-    # Checks result.
-    if result.reason == speechsdk.ResultReason.RecognizedSpeech:
-        print("Recognized: {}".format(result.text))
-    elif result.reason == speechsdk.ResultReason.NoMatch:
-        print("No speech could be recognized: {}".format(result.no_match_details))
-    elif result.reason == speechsdk.ResultReason.Canceled:
-        cancellation_details = result.cancellation_details
-        print("Speech Recognition canceled: {}".format(cancellation_details.reason))
-        if cancellation_details.reason == speechsdk.CancellationReason.Error:
-            print("Error details: {}".format(cancellation_details.error_details))
-
-    return response
+    return jsonify(voice_text)
+    # return response
 
 
 if __name__ == "__main__":
     # httpserver = WSGIServer(('0.0.0.0', 5000), app)
     # httpserver.serve_forever()
-    app.run(host='192.168.43.141', port=5000, ssl_context='adhoc', debug=True)
-# app.run(ssl_context='adhoc')
-# app.run(debug=True)
+    # app.run(host='192.168.43.141', port=5000, ssl_context='adhoc', debug=True)
+    app.run(debug=True)

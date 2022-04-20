@@ -6,13 +6,14 @@
 
 </head>
 <body>
-
-
+<h3>{{textabc}}</h3>
 
 <h1>溶接チャートロボット</h1>
 <div>
+
     <div id="chatbox">
         <p class="botText"><span>コンシェルジュ０号 ：ご要望は何ですか？</span></p>
+
     </div>
     <div id="userInput">
         <input id="textInput" type="text" name="msg" placeholder="Message">
@@ -20,20 +21,16 @@
     </div>
     <div id="container">
 
-    <div id="player">
+        <div id="player">
 
-        <h1>Audio Recording using RecordRTC</h1>
-        <p>Tested in Chrome, Firefox and Safari 11 (Mac and IOS)</p>
 
-        <br>
-        <button id="btn-start-recording">Start Recording</button>
-        <button id="btn-stop-recording" disabled>Stop Recording</button>
+            <br>
+            <button id="btn-start-recording">Start Recording</button>
+            <button id="btn-stop-recording" disabled>Stop Recording</button>
 
-        <hr>
-        <audio controls autoplay></audio>
+        </div>
+
     </div>
-</div>
-
 
 
     <script>
@@ -51,7 +48,7 @@
         }
 
         function get_voice_response() {
-            var url=document.querySelector("audio").src
+            var url = document.querySelector("audio").src
 
             let formData = new FormData();
             formData.append(audio, url, 'audio.wav');
@@ -65,12 +62,12 @@
             }
         });
         $("#buttonInput").click(function () {
-            <!--
+
             if (document.getElementById("textInput").value != "") {
                 getBotResponse();
             }
-            -->
-            get_voice_response();
+
+            //get_voice_response();
         })
     </script>
 
