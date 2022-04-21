@@ -1,34 +1,52 @@
 <!DOCTYPE html>
+
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
     <link rel="stylesheet" type="text/css" href="../static/css/style.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 </head>
 <body>
-<h3>{{textabc}}</h3>
-
-<h1>溶接チャートロボット</h1>
+<h1>溶接AI デモ</h1>
 <div>
-
-    <div id="chatbox">
-        <p class="botText"><span>コンシェルジュ０号 ：ご要望は何ですか？</span></p>
-
-    </div>
-    <div id="userInput">
-        <input id="textInput" type="text" name="msg" placeholder="Message">
-        <input id="buttonInput" type="submit" value="Send">
-    </div>
     <div id="container">
 
-        <div id="player">
+        <article class="tabs" id="div1">
+
+            <input checked id="one" name="tabs" type="radio">
+            <label for="one">チャート</label>
+
+            <input id="two" name="tabs" type="radio" value="Two">
+            <label for="two">Reserved</label>
 
 
-            <br>
-            <button id="btn-start-recording">Start Recording</button>
-            <button id="btn-stop-recording" disabled>Stop Recording</button>
+            <div class="panels">
 
-        </div>
+                <div class="panel">
+
+                    <div id="chatbox">
+                        <p class="botText"><span>溶接チャートロボット ：ご要望は何ですか？</span></p>
+
+                    </div>
+
+                    <div id="userInput">
+                        <input id="textInput" type="text" name="msg" placeholder="Message">
+                        <input id="buttonInput" type="submit" value="送信">
+                    </div>
+                    <button id="btn-start-recording">録音開始</button>
+                    <button id="btn-stop-recording" disabled>録音停止</button>
+
+                </div>
+
+                <div class="panel">
+                    div2
+                </div>
+
+
+            </div>
+
+        </article>
 
     </div>
 

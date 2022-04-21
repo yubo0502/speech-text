@@ -30,7 +30,7 @@ function AudioRecorder(config) {
     let audioInput;
     let jsAudioNode;
     const bufferSize = config.bufferSize || 4096;
-    const sampleRate = config.sampleRate || 44100;
+    const sampleRate = config.sampleRate || 44100;//44100
     const numberOfAudioChannels = config.numberOfAudioChannels || 2;
     let leftChannel = [];
     let rightChannel = [];
@@ -234,7 +234,7 @@ function AudioRecorder(config) {
 
     function mergeLeftRightBuffers(config, callback) {
         function mergeAudioBuffers(config, cb) {
-            config.desiredSampRate = null;
+            config.desiredSampRate = 22050;
             const numberOfAudioChannels = config.numberOfAudioChannels;
 
             // todo: "slice(0)" --- is it causes loop? Should be removed?

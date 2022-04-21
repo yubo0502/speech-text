@@ -10,7 +10,7 @@ from chatterbot.response_selection import get_random_response
 
 app = Flask(__name__)
 
-my_bot = ChatBot(name='コンシェルジュ０号', read_only=True,
+my_bot = ChatBot(name='溶接チャートロボット', read_only=True,
                  response_selection_method=get_random_response,
                  logic_adapters=[{
                      'import_path': 'chatterbot.logic.SpecificResponseAdapter',
@@ -79,7 +79,6 @@ def get_voice_response(audio_file):
     # 言語を日本語に指定
     speech_config.speech_recognition_language = "ja-JP"
     # WAVファイルを指定
-
     audio_config = speech_sdk.AudioConfig(filename="./data/my_voice/voice.wav")
     # SpeechRecognizerを生成 --- (*3)
     speech_recognizer = speech_sdk.SpeechRecognizer(
@@ -87,7 +86,21 @@ def get_voice_response(audio_file):
         audio_config=audio_config)
     # 音声認識を実行 --- (*6)
     result = speech_recognizer.recognize_once()
-    voice_str = result.text
+    # 結果をチェック --- (*7)
+    if result.reason == speech_sdk.ResultReason.RecognizedSpeech:
+        voice_str = result.text
+        print("Recognized: {}".format(result.text))
+    elif result.reason == speech_sdk.ResultReason.NoMatch:
+        voice_str = "【認識できません。もう一度試してください。】"
+        print("No speech could be recognized: {}".format(result.no_match_details))
+    elif result.reason == speech_sdk.ResultReason.Canceled:
+        cancellation_details = result.cancellation_details
+        voice_str = "【認識中断】"
+        print("Speech Recognition canceled: {}".format(cancellation_details.reason))
+        if cancellation_details.reason == speech_sdk.CancellationReason.Error:
+            voice_str = "【認識エラー】"
+            print("Error details: {}".format(cancellation_details.error_details))
+    # voice_str = result.text
 
     return voice_str
 
