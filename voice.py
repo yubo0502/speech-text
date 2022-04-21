@@ -2,8 +2,10 @@
 # Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
 
 # <code>
+import os
+
 import azure.cognitiveservices.speech as speech_sdk
-from flask import Flask, render_template, request, jsonify, Response, json
+from flask import Flask, render_template, request, jsonify, Response, json, send_from_directory
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 from chatterbot.response_selection import get_random_response
@@ -138,6 +140,12 @@ def form():
 
     return jsonify(voice_text)
     # return response
+
+
+@app.route('/favicon.ico')  #
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 
 if __name__ == "__main__":
