@@ -152,4 +152,5 @@ if __name__ == "__main__":
     # httpserver = WSGIServer(('0.0.0.0', 5000), app)
     # httpserver.serve_forever()
     # app.run(host='192.168.43.141', port=5000, ssl_context='adhoc', debug=True)
-    app.run(debug=True)
+    # app.run(debug=True)
+    app.run()
