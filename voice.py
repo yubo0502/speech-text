@@ -12,7 +12,7 @@ from chatterbot.response_selection import get_random_response
 
 app = Flask(__name__)
 
-my_bot = ChatBot(name='溶接チャートロボット', read_only=True,
+my_bot = ChatBot(name='溶接チャートボット', read_only=True,
                  response_selection_method=get_random_response,
                  logic_adapters=[{
                      'import_path': 'chatterbot.logic.SpecificResponseAdapter',
