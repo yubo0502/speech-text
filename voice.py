@@ -5,6 +5,7 @@
 import os
 
 import azure.cognitiveservices.speech as speech_sdk
+from chatterbot.comparisons import LevenshteinDistance
 from flask import Flask, render_template, request, jsonify, Response, json, send_from_directory
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
@@ -12,27 +13,28 @@ from chatterbot.response_selection import get_random_response
 
 app = Flask(__name__)
 
-my_bot = ChatBot(name='溶接チャートロボット', read_only=True,
+my_bot = ChatBot(name='溶接チャートロボット',
+                 read_only=True,
+                 excluded_words=['Q:'],
                  response_selection_method=get_random_response,
-                 logic_adapters=[{
-                     'import_path': 'chatterbot.logic.SpecificResponseAdapter',
-                     'input_text': 'empty',
-                     'output_text': ''
-                 },
+                 statement_comparison_function=LevenshteinDistance,
+                 logic_adapters=[
+                     {
+                         'import_path': 'chatterbot.logic.SpecificResponseAdapter',
+                         'input_text': 'empty',
+                         'output_text': ''
+                     },
                      {
                          'import_path': 'chatterbot.logic.BestMatch',
                          'default_response': 'よくわかりません。もう一度入力してください。',
-                         'maximum_similarity_threshold': 0.7
-                     },
-                     {
-                         'import_path': 'chatterbot.logic.MathematicalEvaluation'
-                     }]
+                         'maximum_similarity_threshold': 0.9
+                     }
+                 ]
                  )
 ''' 学習処理
 corpus_trainer = ChatterBotCorpusTrainer(my_bot)
 corpus_trainer.train("./data/my_corpus/conversations.yml")
 '''
-
 # Azure Portal で取得したキーと地域を指定 --- (*1)
 API_KEY = "cf7ce1c0351b479a884e23e1a64665a9"
 API_REGION = "japanwest"
@@ -115,7 +117,10 @@ def home():
 @app.route("/get")
 def get_bot_response():
     user_input = request.args.get('msg')
-    return my_bot.name + "：" + str(my_bot.get_response(user_input))
+    bot_response = my_bot.get_response(user_input)
+    print(bot_response.confidence)
+    return my_bot.name + "：" + str(bot_response)
+    # return my_bot.name + "：" + str(my_bot.get_response(user_input))
 
 
 @app.route("/receive", methods=['POST'])

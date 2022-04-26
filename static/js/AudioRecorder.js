@@ -71,6 +71,8 @@ function AudioRecorder(config) {
 
     function stopRecording(callback) {
 
+        $('#textInput').val('認識中...');
+
         // stop recording
         recording = false;
 
@@ -112,14 +114,12 @@ function AudioRecorder(config) {
                 method: 'POST',
                 body: data,
             })
-
             .then((response) => {
                 return response.json()　//ここでBodyからJSONを返す
             })
             .then((result) => {
                 console.log(result);  //取得したJSONデータを関数に渡す
                 $('#textInput').val(result);
-
             })
             .catch((e) => {
                 console.log(e)  //エラーをキャッチし表示
