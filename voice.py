@@ -5,6 +5,7 @@
 import os
 
 import azure.cognitiveservices.speech as speech_sdk
+from chatterbot.comparisons import LevenshteinDistance
 from flask import Flask, render_template, request, jsonify, Response, json, send_from_directory
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
