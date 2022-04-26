@@ -5,7 +5,6 @@
 import os
 
 import azure.cognitiveservices.speech as speech_sdk
-from chatterbot.comparisons import LevenshteinDistance
 from flask import Flask, render_template, request, jsonify, Response, json, send_from_directory
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
@@ -13,7 +12,7 @@ from chatterbot.response_selection import get_random_response
 
 app = Flask(__name__)
 
-my_bot = ChatBot(name='溶接チャートロボット',
+my_bot = ChatBot(name='溶接チャートボット',
                  read_only=True,
                  excluded_words=['Q:'],
                  response_selection_method=get_random_response,
@@ -35,6 +34,7 @@ my_bot = ChatBot(name='溶接チャートロボット',
 corpus_trainer = ChatterBotCorpusTrainer(my_bot)
 corpus_trainer.train("./data/my_corpus/conversations.yml")
 '''
+
 # Azure Portal で取得したキーと地域を指定 --- (*1)
 API_KEY = "cf7ce1c0351b479a884e23e1a64665a9"
 API_REGION = "japanwest"
@@ -117,10 +117,7 @@ def home():
 @app.route("/get")
 def get_bot_response():
     user_input = request.args.get('msg')
-    bot_response = my_bot.get_response(user_input)
-    print(bot_response.confidence)
-    return my_bot.name + "：" + str(bot_response)
-    # return my_bot.name + "：" + str(my_bot.get_response(user_input))
+    return my_bot.name + "：" + str(my_bot.get_response(user_input))
 
 
 @app.route("/receive", methods=['POST'])
